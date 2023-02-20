@@ -18,34 +18,57 @@ month_dictionary = {
 
 class Parser:
 
-    _events = []
+    _records = []
 
     @property
-    def events(self):
-        return self._events
+    def records(self):
+        return self._records
 
     def __init__(self, path: str = ""):
         self.path: str = path
 
-    def add_event(self, event: list[str], year: int):
+    def add_record(self, record: list[str], year: int):
 
-        # ensure month and date
+        if len(record) == 0:
+            return
+        datetime_var = None
+        date = None
 
-        dt = datetime.datetime.strptime(event[0][0:15], "%b%d %H%M%S.%f")
-        date = datetime.datetime(year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond)
+        date_string = re.search(r"[A-Z]+[0-9]+\s+\d+\.\d+", record[0])
 
+        if date_string:
+            datetime_var = datetime.datetime.strptime(date_string.group(), "%b%d %H%M%S.%f")
+            date = datetime.datetime(year,
+                                     datetime_var.month,
+                                     datetime_var.day,
+                                     datetime_var.hour,
+                                     datetime_var.minute,
+                                     datetime_var.second,
+                                     datetime_var.microsecond)
 
-        print(date)
+        country = None
+        test = re.search(r"\.\d+\s+(.+)\(\d+\)", record[0])
+        if test:
+            country = re.sub("[.\d\(\)]", "", test.group()).strip()
 
+        lat = None
+        lot = None
 
-    def clean_line(self, line: list) -> list:
+        if re.search(r"\d+.\d+N", record[0]):
+            lat = float(re.search(r"\d+.\d+N", record[0]).group().replace("N", ""))
 
-        cleaned = line.copy()
-        for element in line:
-            if element == " " or element == "" or element == "\n":
-                cleaned.remove(element)
+        if re.search(r"\d+.\d+E", record[0]):
+            lot = float(re.search(r"\d+.\d+E", record[0]).group().replace("E", ""))
 
-        return cleaned
+        location_id = None
+
+        if re.search(r"\((\d+)\)", record[0]):
+            location_id = int(re.search(r"\((\d+)\)", record[0]).group().replace("(", "").replace(")", ""))
+
+        record_dictionary = {"time": date, "lat": lat, "lot": lot, "country": country, "location_id": location_id}
+
+        self._records.append(record_dictionary)
+        print(record_dictionary)
 
     def parse(self):
         file = open(self.path, "r")
@@ -53,27 +76,26 @@ class Parser:
         for i in range(4):
             file.readline()
 
-        # extracting year from bulletin
-
-        year = re.search(r"\b\d{4}\b", file.readline()).group()
-
+        year = int(re.search(r"\b\d{4}\b", file.readline()).group())
 
         file.readline()
         file.readline()
-        event = []
+        record = []
 
         for line in file:
-            if line == "\n":
-                self.add_event(event, year)
+            if line == "Copyright (c) Institute of Geophysics CAS Prague":
                 break
+            if line == "\n":
+                self.add_record(record, year)
+                record = []
+                continue
 
-                # event = []
-                # continue
+            record.append(line)
 
-            event.append(line)
-
-        print(event)
+        print(record)
 
 
 pars = Parser("2023_02_bul.txt")
 pars.parse()
+for rec in pars.records:
+    print(rec)
