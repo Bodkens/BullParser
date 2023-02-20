@@ -78,7 +78,7 @@ class Parser:
                 stationInfoQueue.append(line.strip())
 
         # creating table
-        staionNameList = []
+        stationNameList = []
         stationPgList = []
         stationSgList = []
         for station in stationInfoQueue:
@@ -89,7 +89,7 @@ class Parser:
             stationNameMatch = re.search(r"^[A-Z]+", station)
             if stationNameMatch:
                 stationName = stationNameMatch.group()
-                staionNameList.append(stationName)
+                stationNameList.append(stationName)
 
             # extracting Pg
             stationPgTimeMatch = re.search(r"ePg\s+\d+\.\d+", station)
@@ -130,9 +130,9 @@ class Parser:
         # creating dictionary and DataFrame and adding record to a record list
 
         arrivalTimes = {
-            "station" : staionNameList,
-            "pg_arrival_time" : stationPgList,
-            "sg_arrival_time" : stationSgList
+            "station": stationNameList,
+            "pg_arrival_time": stationPgList,
+            "sg_arrival_time": stationSgList
         }
         stationDataFrame = pandas.DataFrame(arrivalTimes)
 
@@ -151,6 +151,7 @@ class Parser:
         for i in range(4):
             file.readline()
 
+        # extracting year of a file
         year = int(re.search(r"\b\d{4}\b", file.readline()).group())
 
         file.readline()
