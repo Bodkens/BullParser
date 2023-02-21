@@ -20,13 +20,13 @@ class Parser:
             return
 
         # checking if record having suitable station info, if record does not have any, we will not add it
-        stationInfoQueue = []
+        station_info_queue = []
         for line in record:
 
             lineMatch = re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line.strip())
             if lineMatch:
-                stationInfoQueue.append(line.strip())
-        if len(stationInfoQueue) == 0:
+                station_info_queue.append(line.strip())
+        if len(station_info_queue) == 0:
             return
         # extracting date
         date = None
@@ -34,22 +34,22 @@ class Parser:
         date_string = re.search(r'[A-Z]+[0-9]+', record[0])
 
         if date_string:
-            datetimeVar = datetime.datetime.strptime(date_string.group(), '%b%d')
-            date = datetime.datetime(year, datetimeVar.month, datetimeVar.day)
+            datetime_var = datetime.datetime.strptime(date_string.group(), '%b%d')
+            date = datetime.datetime(year, datetime_var.month, datetime_var.day)
 
         # extracting date and time, if event has time
 
         date_string = re.search(r'[A-Z]+[0-9]+\s+\d+\.\d+', record[0])
 
         if date_string:
-            datetimeVar = datetime.datetime.strptime(date_string.group(), '%b%d %H%M%S.%f')
+            datetime_var = datetime.datetime.strptime(date_string.group(), '%b%d %H%M%S.%f')
             date = datetime.datetime(year,
-                                     datetimeVar.month,
-                                     datetimeVar.day,
-                                     datetimeVar.hour,
-                                     datetimeVar.minute,
-                                     datetimeVar.second,
-                                     datetimeVar.microsecond)
+                                     datetime_var.month,
+                                     datetime_var.day,
+                                     datetime_var.hour,
+                                     datetime_var.minute,
+                                     datetime_var.second,
+                                     datetime_var.microsecond)
 
         # extracting country
 
@@ -69,79 +69,79 @@ class Parser:
         if re.search(r'\d+.\d+E', record[0]):
             lon = float(re.search(r'\d+.\d+E', record[0]).group().replace('E', ''))
 
-        # extracting locationID
-        locationID = None
-        locationMatch = re.search(r'\((\d+)\)', record[0])
+        # extracting location_id
+        location_id = None
+        location_match = re.search(r'\((\d+)\)', record[0])
 
-        if locationMatch:
-            locationID = int(locationMatch.group().replace('(', '').replace(')', ''))
+        if location_match:
+            location_id = int(location_match.group().replace('(', '').replace(')', ''))
 
         # creating DataFrame with information about stations
 
         # creating table
-        stationNameList = []
-        stationPgList = []
-        stationSgList = []
-        for station in stationInfoQueue:
+        station_name_list = []
+        station_pg_list = []
+        station_sg_list = []
+        for station in station_info_queue:
 
             # extracting station name
 
-            stationNameMatch = re.search(r'^[A-Z]+', station)
-            if stationNameMatch:
-                stationName = stationNameMatch.group()
-                stationNameList.append(stationName)
+            station_name_match = re.search(r'^[A-Z]+', station)
+            if station_name_match:
+                station_name = station_name_match.group()
+                station_name_list.append(station_name)
 
             # extracting Pg
-            stationPgTimeMatch = re.search(r'ePg\s+\d+\.\d+', station)
+            station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', station)
 
-            if stationPgTimeMatch:
-                timeText = stationPgTimeMatch.group().replace('ePg', '').strip()
-                stationPgTimeVar = datetime.datetime.strptime(timeText, '%H%M%S.%f')
+            if station_pg_time_match:
+                time_text = station_pg_time_match.group().replace('ePg', '').strip()
+                station_pg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
 
-                stationPgTime = datetime.datetime(year,
-                                                  date.month,
-                                                  date.day,
-                                                  stationPgTimeVar.hour,
-                                                  stationPgTimeVar.minute,
-                                                  stationPgTimeVar.second,
-                                                  stationPgTimeVar.microsecond)
-                stationPgList.append(stationPgTime)
+                station_pg_time = datetime.datetime(year,
+                                                    date.month,
+                                                    date.day,
+                                                    station_pg_time_var.hour,
+                                                    station_pg_time_var.minute,
+                                                    station_pg_time_var.second,
+                                                    station_pg_time_var.microsecond)
+                station_pg_list.append(station_pg_time)
             else:
-                stationPgList.append(None)
+                station_pg_list.append(None)
 
             # extracting Sg
-            stationSgTimeMatch = re.search(r'eSg\s+\d+\.\d+', station)
+            station_sg_time_match = re.search(r'eSg\s+\d+\.\d+', station)
 
-            if stationSgTimeMatch:
-                timeText = stationSgTimeMatch.group().replace('eSg', '').strip()
-                stationSgTimeVar = datetime.datetime.strptime(timeText, '%H%M%S.%f')
+            if station_sg_time_match:
+                time_text = station_sg_time_match.group().replace('eSg', '').strip()
+                station_sg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
 
-                stationSgTime = datetime.datetime(year,
-                                                  date.month,
-                                                  date.day,
-                                                  stationSgTimeVar.hour,
-                                                  stationSgTimeVar.minute,
-                                                  stationSgTimeVar.second,
-                                                  stationSgTimeVar.microsecond)
-                stationSgList.append(stationSgTime)
+                station_sg_time = datetime.datetime(year,
+                                                    date.month,
+                                                    date.day,
+                                                    station_sg_time_var.hour,
+                                                    station_sg_time_var.minute,
+                                                    station_sg_time_var.second,
+                                                    station_sg_time_var.microsecond)
+                station_sg_list.append(station_sg_time)
             else:
-                stationSgList.append(None)
+                station_sg_list.append(None)
 
         # creating dictionary and DataFrame and adding record to a record list
 
-        arrivalTimes = {
-            'station': stationNameList,
-            'pg_arrival_time': stationPgList,
-            'sg_arrival_time': stationSgList
+        arrival_times = {
+            'station': station_name_list,
+            'pg_arrival_time': station_pg_list,
+            'sg_arrival_time': station_sg_list
         }
-        stationDataFrame = pandas.DataFrame(arrivalTimes)
-        if not stationDataFrame.empty:
+        station_data_frame = pandas.DataFrame(arrival_times)
+        if not station_data_frame.empty:
             recordDictionary = {'time': date,
                                 'lat': lat,
                                 'lon': lon,
                                 'country': country,
-                                'location_id': locationID,
-                                'arrival_times': stationDataFrame}
+                                'location_id': location_id,
+                                'arrival_times': station_data_frame}
 
             self._records.append(recordDictionary)
 
@@ -169,7 +169,7 @@ class Parser:
             record.append(line)
 
 
-if __name__  == '__main__':
+if __name__ == '__main__':
     pars = Parser('2023_02_bul.txt')
     pars.parse()
     for rec in pars.records:
