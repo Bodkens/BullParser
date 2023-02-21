@@ -24,12 +24,12 @@ class Parser:
         station_name_list = []
         station_pg_list = []
         station_sg_list = []
-        correct_station_lines_present = True
+        correct_station_lines_present = False
         for line in record:
 
             line_match = re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line.strip())
             if line_match:
-                correct_station_lines_present = False
+                correct_station_lines_present = True
                 station = line.strip()
                 date = None
 
@@ -85,7 +85,7 @@ class Parser:
                 else:
                     station_sg_list.append(None)
 
-        if correct_station_lines_present:
+        if not correct_station_lines_present:
             return
 
         # extracting date
