@@ -159,7 +159,6 @@ class Parser:
                 lat = None
                 lon = None
                 location_id = None
-
         file.close()
 
 
