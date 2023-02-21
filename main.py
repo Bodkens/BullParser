@@ -149,14 +149,14 @@ class Parser:
         }
         station_data_frame = pandas.DataFrame(arrival_times)
         if not station_data_frame.empty:
-            recordDictionary = {'time': date,
+            record_dictionary = {'time': date,
                                 'lat': lat,
                                 'lon': lon,
                                 'country': country,
                                 'location_id': location_id,
                                 'arrival_times': station_data_frame}
 
-            self._records.append(recordDictionary)
+            self._records.append(record_dictionary)
 
     def parse(self):
         file = open(self.path, 'r')
