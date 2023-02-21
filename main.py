@@ -19,15 +19,75 @@ class Parser:
         if len(record) == 0:
             return
 
-        # checking if record having suitable station info, if record does not have any, we will not add it
+        # checking if record having suitable station info and adding it, if record does not have any, we will not add it
         station_info_queue = []
+        station_name_list = []
+        station_pg_list = []
+        station_sg_list = []
+        correct_station_lines_present = True
         for line in record:
 
-            lineMatch = re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line.strip())
-            if lineMatch:
-                station_info_queue.append(line.strip())
-        if len(station_info_queue) == 0:
+            line_match = re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line.strip())
+            if line_match:
+                correct_station_lines_present = False
+                station = line.strip()
+                date = None
+
+                # extracting month and day from first line
+                date_string = re.search(r'[A-Z]+[0-9]+', record[0])
+                station_info_queue.append(station.strip())
+                if date_string:
+                    datetime_var = datetime.datetime.strptime(date_string.group(), '%b%d')
+                    date = datetime.datetime(year, datetime_var.month, datetime_var.day)
+
+                # extracting station name
+                station_name_match = re.search(r'^[A-Z]+', station)
+                if station_name_match:
+                    station_name = station_name_match.group()
+                    station_name_list.append(station_name)
+                else:
+                    station_name_list.append(None)
+
+                # extracting Pg
+                station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', station)
+
+                if station_pg_time_match and date is not None:
+                    time_text = station_pg_time_match.group().replace('ePg', '').strip()
+                    station_pg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
+
+                    station_pg_time = datetime.datetime(year,
+                                                        date.month,
+                                                        date.day,
+                                                        station_pg_time_var.hour,
+                                                        station_pg_time_var.minute,
+                                                        station_pg_time_var.second,
+                                                        station_pg_time_var.microsecond)
+                    station_pg_list.append(station_pg_time)
+                else:
+                    station_pg_list.append(None)
+
+                # extracting Sg
+                station_sg_time_match = re.search(r'eSg\s+\d+\.\d+', station)
+
+                if station_sg_time_match and date is not None:
+
+                    time_text = station_sg_time_match.group().replace('eSg', '').strip()
+                    station_sg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
+
+                    station_sg_time = datetime.datetime(year,
+                                                        date.month,
+                                                        date.day,
+                                                        station_sg_time_var.hour,
+                                                        station_sg_time_var.minute,
+                                                        station_sg_time_var.second,
+                                                        station_sg_time_var.microsecond)
+                    station_sg_list.append(station_sg_time)
+                else:
+                    station_sg_list.append(None)
+
+        if correct_station_lines_present:
             return
+
         # extracting date
         date = None
 
@@ -79,53 +139,6 @@ class Parser:
         # creating DataFrame with information about stations
 
         # creating table
-        station_name_list = []
-        station_pg_list = []
-        station_sg_list = []
-        for station in station_info_queue:
-
-            # extracting station name
-
-            station_name_match = re.search(r'^[A-Z]+', station)
-            if station_name_match:
-                station_name = station_name_match.group()
-                station_name_list.append(station_name)
-
-            # extracting Pg
-            station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', station)
-
-            if station_pg_time_match:
-                time_text = station_pg_time_match.group().replace('ePg', '').strip()
-                station_pg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
-
-                station_pg_time = datetime.datetime(year,
-                                                    date.month,
-                                                    date.day,
-                                                    station_pg_time_var.hour,
-                                                    station_pg_time_var.minute,
-                                                    station_pg_time_var.second,
-                                                    station_pg_time_var.microsecond)
-                station_pg_list.append(station_pg_time)
-            else:
-                station_pg_list.append(None)
-
-            # extracting Sg
-            station_sg_time_match = re.search(r'eSg\s+\d+\.\d+', station)
-
-            if station_sg_time_match:
-                time_text = station_sg_time_match.group().replace('eSg', '').strip()
-                station_sg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
-
-                station_sg_time = datetime.datetime(year,
-                                                    date.month,
-                                                    date.day,
-                                                    station_sg_time_var.hour,
-                                                    station_sg_time_var.minute,
-                                                    station_sg_time_var.second,
-                                                    station_sg_time_var.microsecond)
-                station_sg_list.append(station_sg_time)
-            else:
-                station_sg_list.append(None)
 
         # creating dictionary and DataFrame and adding record to a record list
 
