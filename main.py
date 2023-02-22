@@ -21,7 +21,8 @@ class Parser:
             file.readline()
 
         # extracting year of a file
-        year = int(re.search(r'\b\d{4}\b', file.readline()).group())
+        year_line = file.readline().strip().split()
+        year = int(year_line[0])
 
         file.readline()
         file.readline()
@@ -29,6 +30,7 @@ class Parser:
         station_name_list = []
         station_pg_list = []
         station_sg_list = []
+
         correct_station_lines_present = False
         date = None
         country = None
@@ -39,29 +41,39 @@ class Parser:
             line = file_line.strip()
             if line == 'Copyright (c) Institute of Geophysics CAS Prague\n':
                 break
-            # checking if it is first line of record
+            # checking if it is first line without any info, only with date and location_id
+            if re.search(r'^[A-Z]+[0-9]+\s+[*]+\(\d+\)', line):
 
+                # delete redundant characters
+                split_line = re.sub(r'[()*]', '', line).split()
+
+                # extracting month, day and location_id
+                datetime_var = datetime.datetime.strptime(split_line[0], '%b%d')
+
+                date = datetime.datetime(year, datetime_var.month, datetime_var.day)
+
+                location_id = int(split_line[1])
+
+                continue
+
+            # checking if it is first line of record with additional info
             if re.search(r'^[A-Z]+[0-9]+(.+)\(\d+\)', line):
 
-                date_string = re.search(r'[A-Z]+[0-9]+', line)
+                # extracting month, day and time
 
-                if date_string:
-                    datetime_var = datetime.datetime.strptime(date_string.group(), '%b%d')
-                    date = datetime.datetime(year, datetime_var.month, datetime_var.day)
+                split_line = line.split()
 
-                # extracting date and time, if event has time
+                month_day = datetime.datetime.strptime(split_line[0], '%b%d')
 
-                date_string = re.search(r'[A-Z]+[0-9]+\s+\d+\.\d+', line)
+                time_var = datetime.datetime.strptime(split_line[1], '%H%M%S.%f')
 
-                if date_string:
-                    datetime_var = datetime.datetime.strptime(date_string.group(), '%b%d %H%M%S.%f')
-                    date = datetime.datetime(year,
-                                             datetime_var.month,
-                                             datetime_var.day,
-                                             datetime_var.hour,
-                                             datetime_var.minute,
-                                             datetime_var.second,
-                                             datetime_var.microsecond)
+                date = datetime.datetime(year,
+                                         month_day.month,
+                                         month_day.day,
+                                         time_var.hour,
+                                         time_var.minute,
+                                         time_var.second,
+                                         time_var.microsecond)
 
                 # extracting country
                 country_match = re.search(r'\.\d+\s+(.+)\(\d+\)', line)
@@ -69,12 +81,13 @@ class Parser:
                     country = re.sub(r'[.\d()]', '', country_match.group()).strip()
 
                 # extracting latitude and longitude
+                lat_match = re.search(r'\d+.\d+N', line)
+                if lat_match:
+                    lat = float(lat_match.group().replace('N', ''))
 
-                if re.search(r'\d+.\d+N', line):
-                    lat = float(re.search(r'\d+.\d+N', line).group().replace('N', ''))
-
-                if re.search(r'\d+.\d+E', line):
-                    lon = float(re.search(r'\d+.\d+E', line).group().replace('E', ''))
+                lon_match = re.search(r'\d+.\d+E', line)
+                if lon_match:
+                    lon = float(lon_match.group().replace('E', ''))
 
                 # extracting location_id
                 location_match = re.search(r'\((\d+)\)', line)
@@ -87,12 +100,10 @@ class Parser:
             if re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line):
                 correct_station_lines_present = True
                 # extracting station name
-                station_name_match = re.search(r'^[A-Z]+', line)
-                if station_name_match:
-                    station_name = station_name_match.group()
-                    station_name_list.append(station_name)
-                else:
-                    station_name_list.append(None)
+
+                split_line = line.split()
+
+                station_name_list.append(split_line[0])
 
                 # extracting Pg
                 station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', line)
