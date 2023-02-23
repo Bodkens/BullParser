@@ -39,8 +39,53 @@ class Parser:
         location_id = None
         for file_line in file:
             line = file_line.strip()
-            if line == 'Copyright (c) Institute of Geophysics CAS Prague\n':
-                break
+
+            # checking if it is line about stations
+            if re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line):
+                    correct_station_lines_present = True
+                    # extracting station name
+
+                    split_line = line.split()
+
+                    station_name_list.append(split_line[0])
+
+                    # extracting Pg
+                    station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', line)
+
+                    if station_pg_time_match and date is not None:
+                        time_text = station_pg_time_match.group().replace('ePg', '').strip()
+                        station_pg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
+
+                        station_pg_time = datetime.datetime(year,
+                                                            date.month,
+                                                            date.day,
+                                                            station_pg_time_var.hour,
+                                                            station_pg_time_var.minute,
+                                                            station_pg_time_var.second,
+                                                            station_pg_time_var.microsecond)
+                        station_pg_list.append(station_pg_time)
+                    else:
+                        station_pg_list.append(None)
+
+                    # extracting Sg
+                    station_sg_time_match = re.search(r'eSg\s+\d+\.\d+', line)
+
+                    if station_sg_time_match and date is not None:
+
+                        time_text = station_sg_time_match.group().replace('eSg', '').strip()
+                        station_sg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
+
+                        station_sg_time = datetime.datetime(year,
+                                                            date.month,
+                                                            date.day,
+                                                            station_sg_time_var.hour,
+                                                            station_sg_time_var.minute,
+                                                            station_sg_time_var.second,
+                                                            station_sg_time_var.microsecond)
+                        station_sg_list.append(station_sg_time)
+                    else:
+                        station_sg_list.append(None)
+
             # checking if it is first line without any info, only with date and location_id
             if re.search(r'^[A-Z]+[0-9]+\s+[*]+\(\d+\)', line):
 
@@ -97,53 +142,6 @@ class Parser:
 
                 continue
 
-            # checking if it is line about stations
-
-            if re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line):
-                correct_station_lines_present = True
-                # extracting station name
-
-                split_line = line.split()
-
-                station_name_list.append(split_line[0])
-
-                # extracting Pg
-                station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', line)
-
-                if station_pg_time_match and date is not None:
-                    time_text = station_pg_time_match.group().replace('ePg', '').strip()
-                    station_pg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
-
-                    station_pg_time = datetime.datetime(year,
-                                                        date.month,
-                                                        date.day,
-                                                        station_pg_time_var.hour,
-                                                        station_pg_time_var.minute,
-                                                        station_pg_time_var.second,
-                                                        station_pg_time_var.microsecond)
-                    station_pg_list.append(station_pg_time)
-                else:
-                    station_pg_list.append(None)
-
-                # extracting Sg
-                station_sg_time_match = re.search(r'eSg\s+\d+\.\d+', line)
-
-                if station_sg_time_match and date is not None:
-
-                    time_text = station_sg_time_match.group().replace('eSg', '').strip()
-                    station_sg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
-
-                    station_sg_time = datetime.datetime(year,
-                                                        date.month,
-                                                        date.day,
-                                                        station_sg_time_var.hour,
-                                                        station_sg_time_var.minute,
-                                                        station_sg_time_var.second,
-                                                        station_sg_time_var.microsecond)
-                    station_sg_list.append(station_sg_time)
-                else:
-                    station_sg_list.append(None)
-
             # adding record to list if it has lines with correct format
             if file_line == '\n':
                 if correct_station_lines_present:
@@ -172,6 +170,9 @@ class Parser:
                 lat = None
                 lon = None
                 location_id = None
+
+            if line == 'Copyright (c) Institute of Geophysics CAS Prague\n':
+                break
         file.close()
 
 
