@@ -87,7 +87,7 @@ class Parser:
                         station_sg_list.append(None)
 
             # checking if it is first line without any info, only with date and location_id
-            if re.search(r'^[A-Z]+[0-9]+\s+[*]+\(\d+\)', line):
+            elif re.search(r'^[A-Z]+[0-9]+\s+[*]+\(\d+\)', line):
 
                 # delete redundant characters
                 split_line = re.sub(r'[()*]', '', line).split()
@@ -102,7 +102,7 @@ class Parser:
                 continue
 
             # checking if it is first line of record with additional info
-            if re.search(r'^[A-Z]+[0-9]+(.+)\(\d+\)', line):
+            elif re.search(r'^[A-Z]+[0-9]+(.+)\(\d+\)', line):
 
                 # extracting month, day and time
 
@@ -143,7 +143,7 @@ class Parser:
                 continue
 
             # adding record to list if it has lines with correct format
-            if file_line == '\n':
+            elif file_line == '\n':
                 if correct_station_lines_present:
                     arrival_times = {
                         'station': station_name_list,
@@ -171,7 +171,7 @@ class Parser:
                 lon = None
                 location_id = None
 
-            if line == 'Copyright (c) Institute of Geophysics CAS Prague\n':
+            elif line == 'Copyright (c) Institute of Geophysics CAS Prague\n':
                 break
         file.close()
 
