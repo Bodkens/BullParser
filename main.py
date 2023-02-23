@@ -95,6 +95,8 @@ class Parser:
                 if location_match:
                     location_id = int(location_match.group().replace('(', '').replace(')', ''))
 
+                continue
+
             # checking if it is line about stations
 
             if re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line):
