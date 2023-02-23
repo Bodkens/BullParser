@@ -4,7 +4,6 @@ import re
 
 
 class Parser:
-
     _records = []
 
     @property
@@ -42,49 +41,50 @@ class Parser:
 
             # checking if it is line about stations
             if re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line):
-                    correct_station_lines_present = True
-                    # extracting station name
 
-                    split_line = line.split()
+                correct_station_lines_present = True
 
-                    station_name_list.append(split_line[0])
+                # extracting station name
+                split_line = line.split()
 
-                    # extracting Pg
-                    station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', line)
+                station_name_list.append(split_line[0])
 
-                    if station_pg_time_match and date is not None:
-                        time_text = station_pg_time_match.group().replace('ePg', '').strip()
-                        station_pg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
+                # extracting Pg
+                station_pg_time_match = re.search(r'ePg\s+\d+\.\d+', line)
 
-                        station_pg_time = datetime.datetime(year,
-                                                            date.month,
-                                                            date.day,
-                                                            station_pg_time_var.hour,
-                                                            station_pg_time_var.minute,
-                                                            station_pg_time_var.second,
-                                                            station_pg_time_var.microsecond)
-                        station_pg_list.append(station_pg_time)
-                    else:
-                        station_pg_list.append(None)
+                if station_pg_time_match and date is not None:
+                    time_text = station_pg_time_match.group().replace('ePg', '').strip()
+                    station_pg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
 
-                    # extracting Sg
-                    station_sg_time_match = re.search(r'eSg\s+\d+\.\d+', line)
+                    station_pg_time = datetime.datetime(year,
+                                                        date.month,
+                                                        date.day,
+                                                        station_pg_time_var.hour,
+                                                        station_pg_time_var.minute,
+                                                        station_pg_time_var.second,
+                                                        station_pg_time_var.microsecond)
+                    station_pg_list.append(station_pg_time)
+                else:
+                    station_pg_list.append(None)
 
-                    if station_sg_time_match and date is not None:
+                # extracting Sg
+                station_sg_time_match = re.search(r'eSg\s+\d+\.\d+', line)
 
-                        time_text = station_sg_time_match.group().replace('eSg', '').strip()
-                        station_sg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
+                if station_sg_time_match and date is not None:
 
-                        station_sg_time = datetime.datetime(year,
-                                                            date.month,
-                                                            date.day,
-                                                            station_sg_time_var.hour,
-                                                            station_sg_time_var.minute,
-                                                            station_sg_time_var.second,
-                                                            station_sg_time_var.microsecond)
-                        station_sg_list.append(station_sg_time)
-                    else:
-                        station_sg_list.append(None)
+                    time_text = station_sg_time_match.group().replace('eSg', '').strip()
+                    station_sg_time_var = datetime.datetime.strptime(time_text, '%H%M%S.%f')
+
+                    station_sg_time = datetime.datetime(year,
+                                                        date.month,
+                                                        date.day,
+                                                        station_sg_time_var.hour,
+                                                        station_sg_time_var.minute,
+                                                        station_sg_time_var.second,
+                                                        station_sg_time_var.microsecond)
+                    station_sg_list.append(station_sg_time)
+                else:
+                    station_sg_list.append(None)
 
             # checking if it is first line without any info, only with date and location_id
             elif re.search(r'^[A-Z]+[0-9]+\s+[*]+\(\d+\)', line):
@@ -98,8 +98,6 @@ class Parser:
                 date = datetime.datetime(year, datetime_var.month, datetime_var.day)
 
                 location_id = int(split_line[1])
-
-                continue
 
             # checking if it is first line of record with additional info
             elif re.search(r'^[A-Z]+[0-9]+(.+)\(\d+\)', line):
@@ -140,8 +138,6 @@ class Parser:
                 if location_match:
                     location_id = int(location_match.group().replace('(', '').replace(')', ''))
 
-                continue
-
             # adding record to list if it has lines with correct format
             elif file_line == '\n':
                 if correct_station_lines_present:
@@ -181,4 +177,3 @@ if __name__ == '__main__':
     pars.parse()
     for rec in pars.records:
         print(rec)
-
