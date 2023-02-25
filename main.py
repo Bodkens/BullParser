@@ -36,11 +36,12 @@ class Parser:
         lat = None
         lon = None
         location_id = None
+
         for file_line in file:
             line = file_line.strip()
 
             # checking if it is line about stations
-            if re.search(r'[A-Z]+\s+e(Pg)|(Sg)+\s+\d+\.\d+', line):
+            if 'eSg' in line or 'ePg' in line:
 
                 correct_station_lines_present = True
 
@@ -87,10 +88,9 @@ class Parser:
                     station_sg_list.append(None)
 
             # checking if it is first line without any info, only with date and location_id
-            elif re.search(r'^[A-Z]+[0-9]+\s+[*]+\(\d+\)', line):
-
+            elif '*' in line:
                 # delete redundant characters
-                split_line = re.sub(r'[()*]', '', line).split()
+                split_line = line.replace('(', '').replace(')', '').replace('*', '').split()
 
                 # extracting month, day and location_id
                 datetime_var = datetime.datetime.strptime(split_line[0], '%b%d')
@@ -99,8 +99,40 @@ class Parser:
 
                 location_id = int(split_line[1])
 
+            # adding record to list if it has lines with correct format
+            elif file_line == '\n':
+                if correct_station_lines_present:
+                    arrival_times = {
+                        'station': station_name_list,
+                        'pg_arrival_time': station_pg_list,
+                        'sg_arrival_time': station_sg_list
+                    }
+                    station_data_frame = pandas.DataFrame(arrival_times)
+                    record_dictionary = {
+                        'time': date,
+                        'lat': lat,
+                        'lon': lon,
+                        'country': country,
+                        'location_id': location_id,
+                        'arrival_times': station_data_frame}
+
+                    self._records.append(record_dictionary)
+
+                station_name_list = []
+                station_pg_list = []
+                station_sg_list = []
+                correct_station_lines_present = False
+                date = None
+                country = None
+                lat = None
+                lon = None
+                location_id = None
+
+            elif line == 'Copyright (c) Institute of Geophysics CAS Prague':
+                break
+
             # checking if it is first line of record with additional info
-            elif re.search(r'^[A-Z]+[0-9]+(.+)\(\d+\)', line):
+            elif file_line[0] != ' ':
 
                 # extracting month, day and time
 
@@ -137,38 +169,6 @@ class Parser:
 
                 if location_match:
                     location_id = int(location_match.group().replace('(', '').replace(')', ''))
-
-            # adding record to list if it has lines with correct format
-            elif file_line == '\n':
-                if correct_station_lines_present:
-                    arrival_times = {
-                        'station': station_name_list,
-                        'pg_arrival_time': station_pg_list,
-                        'sg_arrival_time': station_sg_list
-                    }
-                    station_data_frame = pandas.DataFrame(arrival_times)
-                    record_dictionary = {
-                        'time': date,
-                        'lat': lat,
-                        'lon': lon,
-                        'country': country,
-                        'location_id': location_id,
-                        'arrival_times': station_data_frame}
-
-                    self._records.append(record_dictionary)
-
-                station_name_list = []
-                station_pg_list = []
-                station_sg_list = []
-                correct_station_lines_present = False
-                date = None
-                country = None
-                lat = None
-                lon = None
-                location_id = None
-
-            elif line == 'Copyright (c) Institute of Geophysics CAS Prague\n':
-                break
         file.close()
 
 
