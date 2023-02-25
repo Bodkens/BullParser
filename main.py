@@ -1,7 +1,5 @@
 import datetime
 import pandas
-import re
-
 
 class Parser:
     _records = []
