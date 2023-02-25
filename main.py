@@ -176,6 +176,7 @@ class Parser:
 
                 country = country.strip()
 
+                # extracting latitude and longitude
                 if 'N' in split_line[checkpoint]:
                     lat = float(split_line[checkpoint].replace('N', ''))
                 if 'E' in split_line[checkpoint + 1]:
