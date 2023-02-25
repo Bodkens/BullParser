@@ -164,24 +164,22 @@ class Parser:
 
                 # extracting country and location_id
                 country = ''
-                for word in split_line[2:]:
+                checkpoint = 3   # from what point of line start extracting coordinates
+                for index, word in enumerate(split_line[2:]):
                     if '(' in word:
                         location_id = int(word.split('(')[1].replace(')', ''))
                         word = word.split('(')[0]
+                        checkpoint += index
                         country += word
                         break
                     country += word + ' '
 
                 country = country.strip()
 
-                # extracting latitude and longitude
-                lat_match = re.search(r'\d+.\d+N', line)
-                if lat_match:
-                    lat = float(lat_match.group().replace('N', ''))
-
-                lon_match = re.search(r'\d+.\d+E', line)
-                if lon_match:
-                    lon = float(lon_match.group().replace('E', ''))
+                if 'N' in split_line[checkpoint]:
+                    lat = float(split_line[checkpoint].replace('N', ''))
+                if 'E' in split_line[checkpoint + 1]:
+                    lon = float(split_line[checkpoint + 1].replace('E', ''))
 
         file.close()
 
