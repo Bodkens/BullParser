@@ -162,10 +162,17 @@ class Parser:
                                          time_var.second,
                                          time_var.microsecond)
 
-                # extracting country
-                country_match = re.search(r'\.\d+\s+(.+)\(\d+\)', line)
-                if country_match:
-                    country = re.sub(r'[.\d()]', '', country_match.group()).strip()
+                # extracting country and location_id
+                country = ''
+                for word in split_line[2:]:
+                    if '(' in word:
+                        location_id = int(word.split('(')[1].replace(')', ''))
+                        word = word.split('(')[0]
+                        country += word
+                        break
+                    country += word + ' '
+
+                country = country.strip()
 
                 # extracting latitude and longitude
                 lat_match = re.search(r'\d+.\d+N', line)
@@ -176,11 +183,6 @@ class Parser:
                 if lon_match:
                     lon = float(lon_match.group().replace('E', ''))
 
-                # extracting location_id
-                location_match = re.search(r'\((\d+)\)', line)
-
-                if location_match:
-                    location_id = int(location_match.group().replace('(', '').replace(')', ''))
         file.close()
 
 
